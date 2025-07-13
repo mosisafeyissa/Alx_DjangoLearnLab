@@ -13,3 +13,8 @@ book_to_delete.delete()
 
 # Confirm deletion by retrieving all books
 print(Book.objects.all())
+
+
+book = Book.objects.get(title="Nineteen Eighty-Four")
+book.delete()
+Book.objects.all()
