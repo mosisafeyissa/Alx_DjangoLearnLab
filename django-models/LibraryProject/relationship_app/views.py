@@ -41,6 +41,15 @@ class RegisterView(CreateView):
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.shortcuts import render
 
+from django.views.generic.detail import DetailView
+from .models import Library
+
+class LibraryDetailView(DetailView):
+    model = Library
+    template_name = 'relationship_app/library_detail.html'  
+    context_object_name = 'library'
+
+
 
 def is_admin(user):
     return hasattr(user, 'userprofile') and user.userprofile.role == 'Admin'
