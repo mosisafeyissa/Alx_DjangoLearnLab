@@ -7,10 +7,14 @@ from .models import Book
 from .forms import BookForm 
 
 
+
+def list_books(request):
+    books = Book.objects.all()
+    return render(request, 'relationship_app/list_books.html', {'books': books})
+    
 def list_books(request):
     books = Book.objects.all()
     return render(request, 'list_books.html', {'books': books})
-
 
 from django.views.generic.detail import DetailView
 from .models import Library
