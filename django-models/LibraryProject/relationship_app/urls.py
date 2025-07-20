@@ -10,7 +10,9 @@ urlpatterns = [
 
     path('login/', LoginView.as_view(template_name='relationship_app/login.html'), name='login'),
     path('logout/', LogoutView.as_view(template_name='relationship_app/logout.html'), name='logout'),
+    
     path('register/', RegisterView.as_view(), name='register'),
+    path('register/', register_view, name='register'),
 ]
 
 from .views import admin_view, librarian_view, member_view
