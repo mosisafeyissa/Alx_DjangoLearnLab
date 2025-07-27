@@ -5,7 +5,7 @@ from .forms import BookSearchForm
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Book
 from .forms import BookForm
-
+from .forms import ExampleForm
 # View books (can_view permission)
 @permission_required('bookshelf.can_view', raise_exception=True)
 def book_list(request):
