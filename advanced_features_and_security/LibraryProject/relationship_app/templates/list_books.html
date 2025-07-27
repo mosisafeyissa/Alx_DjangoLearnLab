@@ -13,3 +13,15 @@
     </ul>
 </body>
 </html>
+
+
+<form method="get">
+    {{ form.as_p }}
+    <button type="submit">Search</button>
+</form>
+
+<ul>
+{% for book in books %}
+    <li>{{ book.title }}</li>
+{% endfor %}
+</ul>

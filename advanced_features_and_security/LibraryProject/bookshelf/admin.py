@@ -10,7 +10,9 @@ class BookAdmin(admin.ModelAdmin):
 admin.site.register(Book,BookAdmin,)
 
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+# from .models import CustomUser
+from accounts.models import CustomUser
+
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
