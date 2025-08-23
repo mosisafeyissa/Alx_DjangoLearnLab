@@ -6,6 +6,7 @@ from .permissions import IsAuthorOrReadOnly
 from rest_framework.decorators import api_view, permission_classes,action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from notifications.models import Notification
 
 
@@ -126,6 +127,14 @@ def user_feed(request):
     return paginator.get_paginated_response(serializer.data)
 
 
+class FeedView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        user = request.user
+        following_users = user.following.all()
+        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data)
 
 
