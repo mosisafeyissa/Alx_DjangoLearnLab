@@ -5,7 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
 from .models import CustomUser
+from .models import User
 from .serializers import RegisterSerializer, LoginSerializer, ProfileSerializer
 
 class RegisterView(generics.CreateAPIView):
@@ -70,3 +72,28 @@ def unfollow_user(request, user_id):
 
     current_user.following.remove(target_user)
     return Response({"detail": f"You have unfollowed {target_user.username}."}, status=status.HTTP_200_OK)
+
+
+class FollowUser(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        user_to_follow = get_object_or_404(User, id=user_id)
+        user = request.user  
+
+        if user == user_to_follow:
+            return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+        user.following.add(user_to_follow)
+        return Response({"detail": f"You are now following {user_to_follow.username}."}, status=status.HTTP_200_OK)
+
+class UnfollowUser(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        user_to_unfollow = get_object_or_404(User, id=user_id)
+        user = request.user  
+        if user == user_to_unfollow:
+            return Response({"detail": "You cannot unfollow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.following.remove(user_to_unfollow)
+        return Response({"detail": f"You have unfollowed {user_to_unfollow.username}."}, status=status.HTTP_200_OK)
