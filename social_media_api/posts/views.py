@@ -6,9 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .models import Post, Like
-from .serializers import PostSerializer, CommentSerializer
+from .serializers import PostSerializer
 from notifications.models import Notification
-
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
@@ -29,7 +28,8 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def like(self, request, pk=None):
-        post = get_object_or_404(Post, pk=pk)  
+
+        post = get_object_or_404(Post, pk=pk)
         user = request.user
 
         if Like.objects.filter(post=post, user=user).exists():
@@ -41,7 +41,7 @@ class PostViewSet(viewsets.ModelViewSet):
             Notification.objects.create(
                 recipient=post.author,
                 actor=user,
-                verb='liked',
+                verb='liked your post',
                 target=post
             )
 
@@ -49,7 +49,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def unlike(self, request, pk=None):
-        post = get_object_or_404(Post, pk=pk) 
+        post = get_object_or_404(Post, pk=pk)
         user = request.user
 
         like = Like.objects.filter(post=post, user=user).first()
@@ -57,15 +57,23 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'You have not liked this post.'}, status=status.HTTP_400_BAD_REQUEST)
 
         like.delete()
-        return Response({'detail': 'Post unliked.'}, status=status.HTTP_200_OK)
 
+        if post.author != user:
+            Notification.objects.create(
+                recipient=post.author,
+                actor=user,
+                verb='unliked your post',
+                target=post
+            )
+
+        return Response({'detail': 'Post unliked.'}, status=status.HTTP_200_OK)
 
 class FeedView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
-        followed_users = user.following.all()  
+        followed_users = user.following.all() 
         posts = Post.objects.filter(author__in=followed_users).order_by('-created_at')
 
         paginator = PageNumberPagination()
@@ -74,6 +82,7 @@ class FeedView(APIView):
 
         serializer = PostSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
+
 
 # from rest_framework import viewsets, permissions, filters, status
 # from rest_framework.pagination import PageNumberPagination
