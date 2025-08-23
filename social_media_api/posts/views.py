@@ -29,18 +29,14 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def like(self, request, pk=None):
-        # Get the post using pk
-        post = self.get_object()
+        post = get_object_or_404(Post, pk=pk)  
         user = request.user
 
-        # Check if the user already liked the post
         if Like.objects.filter(post=post, user=user).exists():
             return Response({'detail': 'You already liked this post.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create a like record
         Like.objects.create(post=post, user=user)
 
-        # Create a notification for the post author
         if post.author != user:
             Notification.objects.create(
                 recipient=post.author,
@@ -53,10 +49,9 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def unlike(self, request, pk=None):
-        post = self.get_object()
+        post = get_object_or_404(Post, pk=pk) 
         user = request.user
 
-        # Retrieve and delete the like if it exists
         like = Like.objects.filter(post=post, user=user).first()
         if not like:
             return Response({'detail': 'You have not liked this post.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -70,7 +65,7 @@ class FeedView(APIView):
 
     def get(self, request):
         user = request.user
-        followed_users = user.following.all()  # Assuming you have a 'following' relationship
+        followed_users = user.following.all()  
         posts = Post.objects.filter(author__in=followed_users).order_by('-created_at')
 
         paginator = PageNumberPagination()
@@ -79,8 +74,6 @@ class FeedView(APIView):
 
         serializer = PostSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
-
-
 
 # from rest_framework import viewsets, permissions, filters, status
 # from rest_framework.pagination import PageNumberPagination
